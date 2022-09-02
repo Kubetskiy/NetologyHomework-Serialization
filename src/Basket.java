@@ -1,9 +1,7 @@
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.Scanner;
 
-public class Basket {
+public class Basket implements Serializable {
     private final Product[] goods;
     private double totalValue = 0;
 
@@ -48,24 +46,16 @@ public class Basket {
         System.out.printf("ИТОГО Товаров в корзине на %10.2f\n\n", totalValue);
     }
 
-    public void saveTxt(File textFile) throws FileNotFoundException {
-        var pw = new PrintWriter(textFile);
-        for (int i = 0; i < goods.length; i++) {
-            if (goods[i].getInBasket() > 0) {
-                pw.printf("%d %d\n", i, goods[i].getInBasket());
-            }
-        }
-        pw.close();
+    public void saveBin(File file) throws IOException {
+        var fos = new FileOutputStream(file);
+        var oos = new ObjectOutputStream(fos);
+        oos.writeObject(this);
+        oos.close();
     }
 
-    public Basket loadFromTxtFile(File textFile) throws FileNotFoundException {
-        Scanner sc = new Scanner(textFile);
-        while (sc.hasNext()) {
-            String[] d = sc.nextLine().split(" ");
-            int productNumber = Integer.parseInt(d[0]);
-            int inBasket = Integer.parseInt(d[1]);
-            goods[productNumber].changeItemInBasket(inBasket);
-        }
-        return this;
+    public static Basket loadFromBinFile(File file) throws IOException, ClassNotFoundException {
+        var fis = new FileInputStream(file);
+        var ois = new ObjectInputStream(fis);
+        return (Basket) ois.readObject();
     }
 }
